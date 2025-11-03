@@ -457,7 +457,52 @@ section {
 .portfolio-text {
     padding: 2rem 0;
     text-align: center;
+}
 
+// ========================================
+// PORTFOLIO FILTERS
+// ========================================
+
+.portfolio-filters {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 3rem;
+    flex-wrap: wrap; // Quebra linha em telas pequenas
+
+    .filter-btn {
+        padding: 0.7rem 2rem;
+        border: 2px solid var(--color-secondary);
+        background: transparent;
+        color: var(--color-white);
+        font-family: inherit;
+        font-size: 1rem;
+        font-weight: 500;
+        cursor: pointer;
+        border-radius: 30px;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+
+        // Hover state - mouse passa por cima
+        &:hover {
+            background: var(--color-secondary);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        // Active state - botão selecionado
+        &.active {
+            background: var(--color-secondary);
+            color: var(--color-white);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        // Click state - quando está sendo clicado
+        &:active {
+            transform: translateY(-1px);
+        }
+    }
 }
 
 .portfolios {
@@ -532,6 +577,11 @@ section {
             }
         }
     }
+}
+
+.portfolio-item {
+    // Transições suaves para filtros
+    transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
 .portfolio-item:hover .hover-item {
@@ -738,6 +788,7 @@ section {
         display: flex;
         align-items: center;
         overflow: hidden;
+        transition: all 0.3s ease;
 
         .btn-text {
             padding: 0 2rem;
@@ -751,6 +802,7 @@ section {
             border-radius: 50%;
             padding: 1rem;
             background-color: var(--color-secondary);
+            position: relative;
 
             &::before {
                 content: '';
@@ -773,6 +825,40 @@ section {
                 }
             }
         }
+
+        // Loading state for form submission
+        &.loading {
+            opacity: 0.7;
+            cursor: not-allowed;
+            pointer-events: none;
+
+            .btn-icon::after {
+                content: '';
+                position: absolute;
+                width: 16px;
+                height: 16px;
+                border: 2px solid var(--color-white);
+                border-radius: 50%;
+                border-top-color: transparent;
+                animation: spin 0.6s linear infinite;
+            }
+        }
+
+        &:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+    }
+}
+
+// Spinner animation for loading state
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
     }
 }
 

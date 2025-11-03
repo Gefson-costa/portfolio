@@ -156,8 +156,17 @@
             <p class="portfolio-text">
                 Here is some of my work that I have done in various programming languages
             </p>
+
+            <!-- Portfolio Filters - Permite filtrar projetos por categoria -->
+            <div class="portfolio-filters">
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="web">Web</button>
+                <button class="filter-btn" data-filter="mobile">Mobile</button>
+                <button class="filter-btn" data-filter="design">Design</button>
+            </div>
+
             <div class="portfolios">
-                <div class="portfolio-item">
+                <div class="portfolio-item" data-category="web">
                     <div class="image">
                         <img src="img/port1.jpg" alt="Portfolio Project 1 - Responsive E-commerce Website">
                     </div>
@@ -176,7 +185,7 @@
                     </div>
                 </div>
 
-                <div class="portfolio-item">
+                <div class="portfolio-item" data-category="mobile">
                     <div class="image">
                         <img src="img/port1.jpg" alt="Portfolio Project 2 - Business Landing Page">
                     </div>
@@ -195,7 +204,7 @@
                     </div>
                 </div>
 
-                <div class="portfolio-item">
+                <div class="portfolio-item" data-category="design">
                     <div class="image">
                         <img src="img/port1.jpg" alt="Portfolio Project 3 - Web Application Dashboard">
                     </div>
@@ -360,6 +369,9 @@
     <div class="theme-btn" aria-label="Toggle theme">
         <i class="fa-solid fa-circle-half-stroke"></i>
     </div>
+
+    <!-- EmailJS CDN - Permite enviar emails diretamente do JavaScript -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 
     <script src="app.js"></script>
 </body>

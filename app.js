@@ -2,6 +2,15 @@
 // PORTFOLIO - MODERN JAVASCRIPT
 // ========================================
 
+// ========================================
+// EMAILJS INITIALIZATION
+// ========================================
+// Inicializa EmailJS com sua Public Key
+// Isso conecta o código à sua conta EmailJS
+(function () {
+    emailjs.init("qMxU_vXjtObDhzOUF");
+})();
+
 // Cache DOM elements for better performance
 const sections = document.querySelectorAll('.section');
 const sectBtn = document.querySelectorAll('.control');
@@ -93,7 +102,7 @@ function initFormValidation() {
     // Exit if form doesn't exist on the page
     if (!form) return;
 
-    form.addEventListener('submit', function (e) {
+    form.addEventListener('submit', async function (e) {
         // Prevent default form submission
         e.preventDefault();
 
@@ -134,15 +143,50 @@ function initFormValidation() {
             return;
         }
 
-        // If all validations pass, simulate form submission
-        // In production, you would send this data to a server using fetch/axios
-        showMessage('Message sent successfully! I will get back to you soon.', 'success');
+        // ========================================
+        // SEND EMAIL WITH EMAILJS
+        // ========================================
 
-        // Reset form after successful submission
-        form.reset();
+        // Get submit button for loading state
+        const submitBtn = form.querySelector('.main-btn');
+        const btnText = submitBtn.querySelector('.btn-text');
+        const originalText = btnText.textContent;
 
-        // Optional: Log form data (remove in production)
-        console.log('Form Data:', { name, email, subject, message });
+        try {
+            // Show loading state
+            submitBtn.disabled = true;
+            submitBtn.classList.add('loading');
+            btnText.textContent = 'Sending...';
+
+            // Send email via EmailJS
+            // emailjs.sendForm automatically captures all form fields with 'name' attribute
+            const response = await emailjs.sendForm(
+                'service_rldv4wq',    // Your Service ID
+                'template_n9kjlml',   // Your Template ID
+                form                  // The form element
+            );
+
+            console.log('✅ Email sent successfully!', response.status, response.text);
+
+            // Show success message
+            showMessage('Message sent successfully! I will get back to you soon.', 'success');
+
+            // Reset form
+            form.reset();
+
+        } catch (error) {
+            // Log error for debugging
+            console.error('❌ Failed to send email:', error);
+
+            // Show error message to user
+            showMessage('Failed to send message. Please try again later or contact me directly.', 'error');
+
+        } finally {
+            // Always restore button state (whether success or error)
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('loading');
+            btnText.textContent = originalText;
+        }
     });
 }
 
@@ -188,6 +232,58 @@ function showMessage(message, type) {
 }
 
 // ========================================
+// PORTFOLIO FILTER FUNCTIONALITY
+// ========================================
+
+function initPortfolioFilters() {
+    // Seleciona todos os botões de filtro e itens do portfolio
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const portfolioItems = document.querySelectorAll('.portfolio-item');
+
+    // Exit if no filter buttons exist
+    if (filterBtns.length === 0 || portfolioItems.length === 0) return;
+
+    // Adiciona event listener em cada botão de filtro
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', function () {
+            // 1. Remove classe 'active' de todos os botões
+            filterBtns.forEach(b => b.classList.remove('active'));
+
+            // 2. Adiciona classe 'active' no botão clicado
+            this.classList.add('active');
+
+            // 3. Pega o valor do filtro (data-filter attribute)
+            const filterValue = this.dataset.filter;
+
+            // 4. Filtra os itens do portfolio
+            portfolioItems.forEach(item => {
+                // Pega a categoria do item
+                const itemCategory = item.dataset.category;
+
+                // Se filtro é "all" OU categoria corresponde ao filtro
+                if (filterValue === 'all' || itemCategory === filterValue) {
+                    // Mostra o item com animação suave
+                    item.style.display = 'block';
+                    // Pequeno delay para permitir transição CSS
+                    setTimeout(() => {
+                        item.style.opacity = '1';
+                        item.style.transform = 'scale(1)';
+                    }, 10);
+                } else {
+                    // Esconde o item com animação suave
+                    item.style.opacity = '0';
+                    item.style.transform = 'scale(0.8)';
+                    // Espera animação terminar antes de esconder completamente
+                    setTimeout(() => {
+                        item.style.display = 'none';
+                    }, 300);
+                }
+            });
+        });
+    });
+}
+
+// ========================================
 // INITIALIZE ALL FUNCTIONS
 // ========================================
 
@@ -195,6 +291,7 @@ function showMessage(message, type) {
 document.addEventListener('DOMContentLoaded', function () {
     PageTransitions();
     initFormValidation();
+    initPortfolioFilters();
 
     // Optional: Add smooth scroll behavior
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {

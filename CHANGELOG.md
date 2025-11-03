@@ -1,4 +1,4 @@
-# 📋 CHANGELOG - Portfolio Improvements
+ # 📋 CHANGELOG - Portfolio Improvements
 
 ## 🎓 Documentação Educativa das Mudanças Implementadas
 
@@ -677,4 +677,753 @@ CSS para estilizar mensagens de sucesso/erro do formulário.
 
 **Criado por**: Gefson Costa  
 **Data**: 03/11/2025  
-**Versão**: 1.0 (Melhorias de Curto Prazo Implementadas)
+**Versão**: 1.1 (Backend do Formulário Implementado)
+
+---
+
+# 📧 UPDATE - Backend do Formulário com EmailJS
+
+## 📅 Data: 03/11/2025 (Atualização)
+
+### 🎯 Objetivo desta Atualização
+Implementar backend real para o formulário de contato usando **EmailJS**, permitindo envio de emails reais.
+
+---
+
+## 🆕 NOVA FUNCIONALIDADE: Envio Real de Emails
+
+### 📌 O Que Foi Adicionado
+Backend funcional que envia emails reais quando o formulário é preenchido.
+
+### ✅ Código Novo - Script EmailJS (index.html)
+
+```html
+<!-- Antes do fechamento do </body> -->
+<script type="text/javascript" 
+        src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js">
+</script>
+```
+
+### 🎓 O Que Aprendi
+- **CDN (Content Delivery Network)**: Carrega bibliotecas de servidores otimizados
+- Deve vir ANTES do `app.js` para estar disponível
+- `type="text/javascript"` especifica tipo de conteúdo
+
+---
+
+## 🆕 INICIALIZAÇÃO DO EMAILJS (app.js)
+
+### ✅ Código Novo
+
+```javascript
+// ========================================
+// EMAILJS INITIALIZATION
+// ========================================
+// Inicializa EmailJS com sua Public Key
+(function () {
+    emailjs.init("qMxU_vXjtObDhzOUF");
+})();
+```
+
+### 🎓 O Que Aprendi
+- **IIFE (Immediately Invoked Function Expression)**: `(function() { })()` executa imediatamente
+- `emailjs.init()` conecta o código à conta EmailJS
+- Public Key identifica sua conta mas é segura para uso público
+- Deve ser executado antes de qualquer operação de email
+
+---
+
+## 🔄 MODIFICAÇÃO: Função de Envio do Formulário
+
+### ❌ Código Antigo
+
+```javascript
+// Se validações passarem, simulate form submission
+showMessage('Message sent successfully!', 'success');
+form.reset();
+console.log('Form Data:', { name, email, subject, message });
+```
+
+### ✅ Código Novo
+
+```javascript
+// ========================================
+// SEND EMAIL WITH EMAILJS
+// ========================================
+
+// Get submit button for loading state
+const submitBtn = form.querySelector('.main-btn');
+const btnText = submitBtn.querySelector('.btn-text');
+const originalText = btnText.textContent;
+
+try {
+    // Show loading state
+    submitBtn.disabled = true;
+    submitBtn.classList.add('loading');
+    btnText.textContent = 'Sending...';
+
+    // Send email via EmailJS
+    const response = await emailjs.sendForm(
+        'service_rldv4wq',    // Service ID
+        'template_n9kjlml',   // Template ID
+        form                  // The form element
+    );
+
+    console.log('✅ Email sent successfully!', response.status, response.text);
+    showMessage('Message sent successfully! I will get back to you soon.', 'success');
+    form.reset();
+
+} catch (error) {
+    console.error('❌ Failed to send email:', error);
+    showMessage('Failed to send message. Please try again later.', 'error');
+
+} finally {
+    // Always restore button state
+    submitBtn.disabled = false;
+    submitBtn.classList.remove('loading');
+    btnText.textContent = originalText;
+}
+```
+
+### 🎓 O Que Aprendi
+
+#### **1. Async/Await**
+- `async` na função permite usar `await`
+- `await` pausa execução até Promise resolver
+- Mais legível que `.then().catch()`
+
+#### **2. Try/Catch/Finally**
+- `try` tenta executar código que pode falhar
+- `catch` captura e trata erros
+- `finally` sempre executa (sucesso ou erro) - perfeito para limpar loading state
+
+#### **3. Loading State**
+- Desabilitar botão previne múltiplos cliques
+- Classe `.loading` dispara animação CSS
+- Mudar texto do botão dá feedback visual
+
+#### **4. emailjs.sendForm()**
+- Automaticamente captura campos com atributo `name`
+- Retorna Promise que resolve quando email é enviado
+- Joga erro se algo der errado
+
+---
+
+## 🆕 NOVO CSS: Loading State Animation
+
+### ✅ Código Novo (styles/style.scss)
+
+```scss
+.main-btn {
+    transition: all 0.3s ease;
+    
+    .btn-icon {
+        position: relative;  // Necessário para ::after
+    }
+
+    // Loading state for form submission
+    &.loading {
+        opacity: 0.7;
+        cursor: not-allowed;
+        pointer-events: none;
+
+        .btn-icon::after {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--color-white);
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 0.6s linear infinite;
+        }
+    }
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+}
+
+// Spinner animation
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+```
+
+### 🎓 O Que Aprendi
+
+#### **1. Pseudo-elemento ::after**
+- Cria elemento virtual sem adicionar HTML
+- `content: ''` cria elemento vazio para estilizar
+- `position: absolute` permite posicionamento preciso
+
+#### **2. Spinner Loading**
+- Círculo com `border-radius: 50%`
+- `border-top-color: transparent` cria "gap" no círculo
+- `animation: spin` faz rotação infinita
+- `linear` timing-function para velocidade constante
+
+#### **3. Estados de UI**
+- `cursor: not-allowed` indica que ação não é permitida
+- `pointer-events: none` desabilita todos os eventos
+- `opacity: 0.7` indica visualmente que está desabilitado
+
+---
+
+## 📄 NOVO ARQUIVO: BACKEND-SETUP.md
+
+Criado arquivo de documentação completo explicando:
+- Como EmailJS funciona
+- Fluxo de envio de email
+- Todos os conceitos JavaScript usados
+- Como testar o formulário
+- Troubleshooting comum
+- Próximos passos de aprendizado
+
+**Localização**: `/BACKEND-SETUP.md`
+
+---
+
+## 📊 RESUMO DAS MUDANÇAS - Backend
+
+### ✅ Arquivos Modificados
+1. **index.html**
+   - Adicionado script CDN do EmailJS
+
+2. **app.js**
+   - Inicialização do EmailJS
+   - Função `initFormValidation` agora async
+   - Lógica de envio com EmailJS
+   - Loading state management
+   - Tratamento de erros com try/catch
+
+3. **styles/style.scss**
+   - Estilos para loading state
+   - Animação de spinner
+   - Estados disabled do botão
+
+4. **styles/style.css** (compilado automaticamente)
+
+### 🆕 Arquivos Criados
+1. **BACKEND-SETUP.md** - Documentação completa do backend
+
+---
+
+## 🎯 RESULTADO FINAL
+
+O formulário agora:
+- ✅ Envia emails **reais** para Gefsoncosta22@gmail.com
+- ✅ Mostra **loading state** visual durante envio
+- ✅ Dá **feedback claro** (sucesso ou erro)
+- ✅ **Valida** todos os campos antes de enviar
+- ✅ **Desabilita** botão durante envio (previne spam)
+- ✅ **Limpa** formulário após envio bem-sucedido
+- ✅ **Trata erros** graciosamente
+- ✅ **Loga** informações no console para debug
+
+---
+
+## 💡 CONCEITOS IMPORTANTES APRENDIDOS
+
+### JavaScript Assíncrono
+- **Async/Await**: Forma moderna de lidar com operações assíncronas
+- **Promises**: Representam operações futuras
+- **Try/Catch**: Tratamento robusto de erros
+- **Event Loop**: Como JavaScript lida com operações demoradas
+
+### Integração de APIs
+- **API REST**: EmailJS é uma API REST
+- **HTTP Requests**: Como fazer requisições web
+- **Authentication**: Uso de Public Keys
+- **Error Handling**: Lidar com falhas de rede
+
+### UX/UI
+- **Loading States**: Feedback visual durante operações
+- **Optimistic UI**: Desabilitar ações durante processamento
+- **Error Messages**: Comunicação clara com usuário
+- **Success Feedback**: Confirmação de ações bem-sucedidas
+
+### CSS Avançado
+- **Pseudo-elementos**: ::before e ::after
+- **Animations**: Criar efeitos animados
+- **Keyframes**: Controle preciso de animações
+- **Cursor States**: Feedback visual de interatividade
+
+---
+
+## 🧪 COMO TESTAR
+
+1. **Abra `index.html`** no navegador
+2. **Navegue** até seção Contact
+3. **Preencha** o formulário:
+   - Nome: (mínimo 2 caracteres)
+   - Email: (formato válido)
+   - Subject: (mínimo 3 caracteres)
+   - Message: (mínimo 10 caracteres)
+4. **Clique** em "Send"
+5. **Observe**:
+   - Botão muda para "Sending..." ⏳
+   - Spinner aparece girando 🔄
+   - Mensagem de sucesso aparece ✅
+   - Formulário limpa automaticamente
+   - Email chega na caixa de entrada 📧
+
+---
+
+## 📚 RECURSOS DE APRENDIZADO
+
+- [EmailJS Docs](https://www.emailjs.com/docs/)
+- [MDN: Async Functions](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function)
+- [MDN: Promises](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)
+- [CSS Animations](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Animations)
+
+---
+
+**Criado por**: Gefson Costa  
+**Data Original**: 03/11/2025  
+**Última Atualização**: 03/11/2025  
+**Versão**: 1.2 (Sistema de Filtros Portfolio)
+
+---
+
+# 🎨 UPDATE - Sistema de Filtros no Portfolio
+
+## 📅 Data: 03/11/2025 (Atualização)
+
+### 🎯 Objetivo desta Atualização
+Implementar sistema de filtros interativo no portfolio para permitir filtrar projetos por categoria (All, Web, Mobile, Design).
+
+---
+
+## 🆕 NOVA FUNCIONALIDADE: Filtros de Portfolio
+
+### 📌 O Que Foi Adicionado
+Sistema completo de filtragem com animações suaves e feedback visual.
+
+---
+
+## ✅ CÓDIGO IMPLEMENTADO
+
+### **1. HTML - Botões de Filtro**
+
+```html
+<!-- Portfolio Filters - Permite filtrar projetos por categoria -->
+<div class="portfolio-filters">
+    <button class="filter-btn active" data-filter="all">All</button>
+    <button class="filter-btn" data-filter="web">Web</button>
+    <button class="filter-btn" data-filter="mobile">Mobile</button>
+    <button class="filter-btn" data-filter="design">Design</button>
+</div>
+```
+
+### 🎓 O Que Aprendi
+
+#### **Data Attributes (data-*)**
+- `data-filter="all"` armazena informação customizada
+- HTML5 permite criar atributos personalizados com `data-`
+- JavaScript acessa via `dataset.filter`
+- Forma moderna e semântica de armazenar dados
+
+#### **Classe Active**
+- Primeira button tem `class="filter-btn active"`
+- Indica qual filtro está selecionado por padrão
+- CSS estiliza botão ativo diferente dos outros
+
+---
+
+### **2. HTML - Categorias nos Projetos**
+
+```html
+<!-- Projeto 1 - Web -->
+<div class="portfolio-item" data-category="web">
+    <!-- conteúdo -->
+</div>
+
+<!-- Projeto 2 - Mobile -->
+<div class="portfolio-item" data-category="mobile">
+    <!-- conteúdo -->
+</div>
+
+<!-- Projeto 3 - Design -->
+<div class="portfolio-item" data-category="design">
+    <!-- conteúdo -->
+</div>
+```
+
+### 🎓 O Que Aprendi
+
+#### **Data Attributes nos Itens**
+- Cada projeto recebe `data-category` com sua categoria
+- JavaScript compara `data-filter` com `data-category`
+- Sistema flexível - fácil adicionar novas categorias
+- Pode ter múltiplas categorias: `data-category="web mobile"`
+
+---
+
+### **3. JavaScript - Função de Filtragem**
+
+```javascript
+function initPortfolioFilters() {
+    // Seleciona elementos
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const portfolioItems = document.querySelectorAll('.portfolio-item');
+
+    // Exit if no elements exist (defensive programming)
+    if (filterBtns.length === 0 || portfolioItems.length === 0) return;
+
+    // Event listener em cada botão
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', function () {
+            // 1. Remove 'active' de todos os botões
+            filterBtns.forEach(b => b.classList.remove('active'));
+
+            // 2. Adiciona 'active' no botão clicado
+            this.classList.add('active');
+
+            // 3. Pega o valor do filtro
+            const filterValue = this.dataset.filter;
+
+            // 4. Filtra os itens
+            portfolioItems.forEach(item => {
+                const itemCategory = item.dataset.category;
+
+                if (filterValue === 'all' || itemCategory === filterValue) {
+                    // Mostra com animação
+                    item.style.display = 'block';
+                    setTimeout(() => {
+                        item.style.opacity = '1';
+                        item.style.transform = 'scale(1)';
+                    }, 10);
+                } else {
+                    // Esconde com animação
+                    item.style.opacity = '0';
+                    item.style.transform = 'scale(0.8)';
+                    setTimeout(() => {
+                        item.style.display = 'none';
+                    }, 300);
+                }
+            });
+        });
+    });
+}
+```
+
+### 🎓 O Que Aprendi
+
+#### **1. querySelectorAll()**
+```javascript
+const filterBtns = document.querySelectorAll('.filter-btn');
+```
+- Retorna NodeList com TODOS os elementos que correspondem
+- Similar a array mas não é array (é NodeList)
+- Pode usar `.forEach()` para iterar
+
+#### **2. Dataset API**
+```javascript
+const filterValue = this.dataset.filter;
+```
+- `dataset` acessa todos os atributos `data-*`
+- `data-filter="web"` → `dataset.filter` retorna `"web"`
+- Camel case: `data-my-value` → `dataset.myValue`
+- Forma moderna de ler dados customizados
+
+#### **3. Event Listeners com forEach**
+```javascript
+filterBtns.forEach(btn => {
+    btn.addEventListener('click', function() { ... });
+});
+```
+- Adiciona evento em CADA botão individualmente
+- `this` dentro da função refere-se ao botão clicado
+- Arrow function no forEach, function normal no addEventListener (para `this` funcionar)
+
+#### **4. Manipulação de Classes**
+```javascript
+filterBtns.forEach(b => b.classList.remove('active'));
+this.classList.add('active');
+```
+- `classList.remove()` remove classe
+- `classList.add()` adiciona classe
+- Melhor que manipular `className` diretamente
+- Mais seguro e legível
+
+#### **5. setTimeout para Animações**
+```javascript
+item.style.display = 'block';
+setTimeout(() => {
+    item.style.opacity = '1';
+}, 10);
+```
+- `display: block` coloca item no layout
+- `setTimeout` com 10ms permite navegador processar
+- Então aplica `opacity: 1` que tem transição CSS
+- Cria efeito de fade suave
+
+#### **6. Sequência de Animações**
+```javascript
+item.style.opacity = '0';           // Começa fade out
+item.style.transform = 'scale(0.8)'; // Diminui tamanho
+setTimeout(() => {
+    item.style.display = 'none';     // Remove do layout
+}, 300);                             // Espera animação terminar
+```
+- Primeiro anima visualmente (opacity + transform)
+- Depois remove do fluxo do documento (display)
+- 300ms = duração da transição CSS
+- Cria efeito profissional
+
+#### **7. Defensive Programming**
+```javascript
+if (filterBtns.length === 0 || portfolioItems.length === 0) return;
+```
+- Verifica se elementos existem antes de usar
+- Previne erros se elementos não estiverem na página
+- Boa prática sempre verificar
+
+---
+
+### **4. CSS - Estilos dos Filtros**
+
+```scss
+.portfolio-filters {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 3rem;
+    flex-wrap: wrap; // Responsivo
+    
+    .filter-btn {
+        padding: 0.7rem 2rem;
+        border: 2px solid var(--color-secondary);
+        background: transparent;
+        color: var(--color-white);
+        font-family: inherit;
+        font-size: 1rem;
+        font-weight: 500;
+        cursor: pointer;
+        border-radius: 30px;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        
+        // Hover - mouse por cima
+        &:hover {
+            background: var(--color-secondary);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        // Active - selecionado
+        &.active {
+            background: var(--color-secondary);
+            color: var(--color-white);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        // Click - sendo clicado
+        &:active {
+            transform: translateY(-1px);
+        }
+    }
+}
+
+// Transições para filtros
+.portfolio-item {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+```
+
+### 🎓 O Que Aprendi
+
+#### **1. Flexbox para Layout**
+```scss
+display: flex;
+justify-content: center;
+gap: 1rem;
+```
+- `flex` distribui botões horizontalmente
+- `justify-content: center` centraliza
+- `gap` espaçamento entre itens (moderno, sem margin)
+- Mais simples que floats ou inline-block
+
+#### **2. Flex-wrap para Responsividade**
+```scss
+flex-wrap: wrap;
+```
+- Permite botões quebrarem linha em telas pequenas
+- Sem isso, botões comprimem horizontalmente
+- UX melhor em mobile
+
+#### **3. Estados de Botão CSS**
+```scss
+&:hover { }      // Mouse por cima
+&.active { }     // Selecionado
+&:active { }     // Sendo clicado
+```
+- Três estados diferentes de interação
+- `:hover` = pseudo-classe (mouse encima)
+- `.active` = classe real (selecionado)
+- `:active` = pseudo-classe (pressionado)
+- Cada um com feedback visual diferente
+
+#### **4. Transform para Micro-interações**
+```scss
+transform: translateY(-3px);  // Sobe 3px
+transform: translateY(-1px);  // Sobe 1px
+```
+- `translateY` move verticalmente
+- Valores negativos sobem
+- Cria sensação de "pressionar"
+- Melhor que mudar `top` ou `margin` (performance)
+
+#### **5. Box-shadow para Profundidade**
+```scss
+box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+```
+- Adiciona sombra para efeito 3D
+- Combina com `transform` para efeito de "levantar"
+- `rgba` para transparência ajustável
+
+#### **6. Transições Globais**
+```scss
+.portfolio-item {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+```
+- Aplica em TODAS as mudanças de opacity/transform
+- Funciona com JavaScript mudando inline styles
+- `0.3s` = 300ms (mesma duração do setTimeout)
+- `ease` = aceleração suave (começa devagar, acelera, termina devagar)
+
+---
+
+## 📊 RESUMO DAS MUDANÇAS
+
+### ✅ Arquivos Modificados
+
+1. **index.html**
+   - Adicionado div `.portfolio-filters` com botões
+   - Adicionado `data-category` em cada `.portfolio-item`
+   - Comentários explicativos
+
+2. **app.js**
+   - Nova função `initPortfolioFilters()`
+   - Event listeners nos botões de filtro
+   - Lógica de filtragem com animações
+   - Chamada da função no `DOMContentLoaded`
+
+3. **styles/style.scss**
+   - Estilos para `.portfolio-filters`
+   - Estilos para `.filter-btn` (normal, hover, active)
+   - Transições para `.portfolio-item`
+   - Comentários educativos
+
+4. **styles/style.css** (compilado automaticamente)
+
+---
+
+## 🎯 RESULTADO FINAL
+
+O portfolio agora possui:
+- ✅ **4 botões de filtro** (All, Web, Mobile, Design)
+- ✅ **Filtragem funcional** por categoria
+- ✅ **Animações suaves** ao filtrar (fade + scale)
+- ✅ **Estado ativo visual** no botão selecionado
+- ✅ **Hover effects** profissionais
+- ✅ **Responsivo** em todos os tamanhos de tela
+- ✅ **Código limpo** e bem documentado
+
+---
+
+## 💡 CONCEITOS APRENDIDOS
+
+### JavaScript
+- ✅ **Data Attributes** - Armazenar dados customizados em HTML
+- ✅ **dataset API** - Acessar data attributes via JavaScript
+- ✅ **querySelectorAll** - Selecionar múltiplos elementos
+- ✅ **forEach** - Iterar sobre NodeLists
+- ✅ **Event Listeners** - Eventos de click
+- ✅ **classList API** - Manipular classes (add/remove)
+- ✅ **setTimeout** - Criar delays e sequências de animação
+- ✅ **Inline Styles** - Modificar CSS via JavaScript
+- ✅ **this keyword** - Referência ao elemento clicado
+
+### CSS/SCSS
+- ✅ **Flexbox** - Layout moderno e responsivo
+- ✅ **gap Property** - Espaçamento moderno entre itens flex
+- ✅ **flex-wrap** - Responsividade automática
+- ✅ **CSS Transitions** - Animações suaves
+- ✅ **Transform** - Micro-interações (translateY)
+- ✅ **Box-shadow** - Profundidade e elevação
+- ✅ **Pseudo-classes** - :hover, :active
+- ✅ **State Classes** - .active para estado selecionado
+- ✅ **text-transform** - UPPERCASE nos botões
+- ✅ **letter-spacing** - Espaçamento entre letras
+
+### UX/UI
+- ✅ **Filter Pattern** - Padrão comum em portfolios
+- ✅ **Visual Feedback** - Indicar ações do usuário
+- ✅ **Micro-interactions** - Detalhes que impressionam
+- ✅ **Smooth Animations** - Não instantâneo = mais agradável
+- ✅ **State Management** - Gerenciar qual filtro está ativo
+- ✅ **Responsive Design** - Funciona em todos os dispositivos
+
+---
+
+## 🧪 COMO TESTAR
+
+1. **Abra `index.html`** no navegador
+2. **Navegue** até seção Portfolio (3º ícone)
+3. **Observe** os 4 botões de filtro acima dos projetos
+4. **Clique em "All"**:
+   - Todos os 3 projetos visíveis
+   - Botão "All" destacado (verde)
+5. **Clique em "Web"**:
+   - Apenas projeto 1 visível
+   - Projetos 2 e 3 desaparecem com animação
+   - Botão "Web" destacado
+6. **Clique em "Mobile"**:
+   - Apenas projeto 2 visível
+   - Outros desaparecem
+   - Botão "Mobile" destacado
+7. **Clique em "Design"**:
+   - Apenas projeto 3 visível
+   - Botão "Design" destacado
+8. **Teste hover**: Passe mouse sobre botões (sobem com sombra)
+9. **Teste responsivo**: Redimensione navegador (botões quebram linha)
+
+---
+
+## 🎨 DISTRIBUIÇÃO DE CATEGORIAS
+
+```
+Projeto 1: data-category="web"
+Projeto 2: data-category="mobile"
+Projeto 3: data-category="design"
+```
+
+Quando adicionar mais projetos, use:
+- **web** - Sites, web apps
+- **mobile** - Apps mobile, PWA
+- **design** - UI/UX, designs
+- Pode adicionar mais: `backend`, `frontend`, etc.
+
+---
+
+## 🚀 PRÓXIMOS PASSOS
+
+### Melhorias Possíveis:
+1. **Contador** - Mostrar quantos projetos em cada categoria
+2. **Múltiplas categorias** - Um projeto ter várias categorias
+3. **URL params** - Manter filtro ao recarregar página
+4. **Animação de entrada** - Projetos aparecerem de diferentes direções
+5. **Filtros adicionais** - Por tecnologia, ano, cliente, etc.
+
+---
+
+**Criado por**: Gefson Costa  
+**Data Original**: 03/11/2025  
+**Última Atualização**: 03/11/2025  
+**Versão**: 1.2 (Sistema de Filtros Portfolio)
